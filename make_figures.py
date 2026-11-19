@@ -82,11 +82,17 @@ def smooth_hist(ax, x, w, bins, sigma=1.5, **kw):
 
 
 def fig_offset(R):
-    fig, ax = plt.subplots(figsize=(7, 4.5)); bins = np.linspace(-4, 4, 121)
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4.5))
+    ax = axes[0]; bins = np.linspace(-4, 4, 121)
     ax.hist(R["off_x"], bins=bins, density=True, color=C["neutral"], label="Population")
     smooth_hist(ax, R["off_x"], R["off_w"], bins, color=C["red_strong"], lw=2.5, label="Feed")
     ax.set(xlabel="Opinion $x$", ylabel="Density"); ax.legend(loc="upper left", fontsize=12)
-    finalize_figure(fig, "1_offset")
+    ax = axes[1]; bins = np.linspace(-3, 3, 61)
+    ax.hist(R["off_a"], bins=bins, density=True, color=C["neutral"], label="Population")
+    smooth_hist(ax, R["off_a"], R["off_w"], bins, color=C["red_strong"], lw=2.5, label="Feed (who is heard)")
+    ax.axvline(0, color="black", lw=1, ls="--")
+    ax.set(xlabel="Agreeability $a$  (< 0: disagreeable)", ylabel="Density"); ax.legend(loc="upper left", fontsize=12)
+    fig.tight_layout(); finalize_figure(fig, "1_offset")
 
 
 def fig_gap(R):

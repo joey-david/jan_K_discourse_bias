@@ -37,7 +37,7 @@ def pmap(jobs):
 def summary(o):
     x, r = o["x"], o["r"]; fw = r / r.sum(); fm = (fw * x).sum()
     return dict(pop_sd=x.std(), feed_sd=np.sqrt((fw * (x - fm) ** 2).sum()),
-                n_fac=n_factions(x),
+                n_fac=n_factions(x), dis_feed=fw[o["a"] < 0].sum(), dis_pop=np.mean(o["a"] < 0),
                 top1=np.sort(fw)[-len(x) // 100:].sum(),
                 gap=np.mean(o["perceived"] / o["true_out"]))
 
@@ -46,6 +46,7 @@ def summary(o):
 def exp_base():
     outs = pmap([(params(**FULL), sd, False) for sd in range(3)])
     RES["off_x"] = np.concatenate([o["x"] for o in outs])
+    RES["off_a"] = np.concatenate([o["a"] for o in outs])
     RES["off_w"] = np.concatenate([o["r"] / o["r"].sum() for o in outs])
     lam = np.concatenate([o["lam"] for o in outs])
     ratio = np.concatenate([o["perceived"] / o["true_out"] for o in outs])
