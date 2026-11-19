@@ -1,5 +1,58 @@
 # Selection bias in online discourse
 
+## Model
+
+Posting rate of agent $i$:
+
+```math
+r_i = \mathrm{act}_i \, \exp\!\big(k\,|x_i| \;-\; a_i\,|x_i - n_i| \;+\; s_i\,\ell_i\big) + r_{\min}
+```
+
+Feed $F_i$: $S$ posts, a share $h$ drawn from opinion neighbours and $1-h$ from the shared feed, both with $P(j) \propto r_j$.
+
+Perceived norm:
+
+```math
+n_i = \lambda_i \,\frac{1}{S}\sum_{j \in F_i} x_j \;+\; (1-\lambda_i)\,\frac{1}{|O_i|}\sum_{j \in O_i} x_j
+```
+
+In-group likes (a viewer likes a same-camp post bolder than their own view):
+
+```math
+\ell_i \leftarrow 0.8\,\ell_i + 0.2\,\frac{\#\{\text{viewers } v:\ \operatorname{sign}x_v=\operatorname{sign}x_i,\ |x_i|>|x_v|\}}{\#\text{views of } i}
+```
+
+Opinion update:
+
+```math
+x_i \leftarrow x_i
++ \mu\Big(\overline{x}_{\{j\in F_i:\,|x_j-x_i|<\varepsilon\}} - x_i\Big)
++ \rho_{g(i)}\,\operatorname{sign}(x_i)\,\frac{1}{S}\sum_{\substack{j\in F_i\\ \operatorname{sign}x_j\neq\operatorname{sign}x_i}} |x_j|
++ \alpha\,(x^0_i - x_i)
+```
+
+| Symbol | Meaning |
+|---|---|
+| $x_i$ | opinion; its sign is the camp $g(i) \in \{L, R\}$ |
+| $x^0_i$ | offline opinion (initial value, real-world anchor) |
+| $\mathrm{act}_i$ | baseline activity, lognormal (heavy-tailed volume) |
+| $k$ | intensity selection: stronger opinions post more |
+| $a_i$ | agreeability: $a>0$ quiet when far from the norm (spiral of silence), $a<0$ louder when far |
+| $n_i$ | perceived norm |
+| $s_i$ | status drive: sensitivity to likes |
+| $\ell_i$ | recent in-group like rate |
+| $r_{\min}$ | posting floor |
+| $S$ | posts seen per step |
+| $h$ | homophily: share of the feed from opinion neighbours |
+| $\lambda_i$ | online share of attention |
+| $O_i$ | random offline contacts (5) |
+| $\mu$ | attraction strength toward nearby views |
+| $\varepsilon$ | confidence bound: how close a view must be to attract |
+| $\rho_L, \rho_R$ | backlash strength against out-group content, per camp |
+| $\alpha$ | pull back toward the offline opinion |
+
+Nested models: M0 ($a=s=\rho=0$) → M1 ($+\bar a>0$) → M2 ($+\operatorname{sd}(a)>0$) → M3 ($+s>0$) → M4 ($+\rho>0$).
+
 ## Figures
 
 **Figure 1. Who is heard: feed vs population**
