@@ -15,11 +15,11 @@ Update: dx = mu*(nearby seen - x) + alpha*(x0 - x)
 """
 import numpy as np
 
-BASE = dict(n=4000, steps=200, sample=20, k=1.0, a_mu=0.0, a_sd=0.0, mu=0.1, eps=0.6, alpha=0.02, h=0.5, lam_mu=0.6,
+BASE = dict(n=4000, steps=200, sample=20, k=2.0, a_mu=0.0, a_sd=0.0, mu=0.1, eps=0.6, alpha=0.02, h=0.5, lam_mu=0.6,
             floor=0.02, f_right=0.5, da_R=0.0, dk_R=0.0, committed=0.0, xmax=4.0,
             shock=None)   # shock = (t0, amplitude, tau, "both"|"R"): charged event boosting k
 
-MODEL = dict(a_mu=0.8)   # spiral of silence strength
+MODEL = dict(a_mu=0.5)   # spiral of silence strength
 
 
 def params(**kw):
