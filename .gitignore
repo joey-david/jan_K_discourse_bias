@@ -1,0 +1,5 @@
+__pycache__/
+results/
+notes.md
+legacy/figures/
+.DS_Store
