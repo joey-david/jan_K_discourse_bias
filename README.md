@@ -2,56 +2,27 @@
 
 ## Model
 
-Posting rate of agent $i$:
-
 ```math
-r_i = \mathrm{act}_i \, \exp\!\big(k\,|x_i| \;-\; a_i\,|x_i - n_i| \;+\; s_i\,\ell_i\big) + r_{\min}
+r_i = \mathrm{act}_i \, e^{\,k|x_i| \,-\, a_i |x_i - n_i|}
 ```
 
-Feed $F_i$: $S$ posts, a share $h$ drawn from opinion neighbours and $1-h$ from the shared feed, both with $P(j) \propto r_j$.
-
-Perceived norm:
-
 ```math
-n_i = \lambda_i \,\frac{1}{S}\sum_{j \in F_i} x_j \;+\; (1-\lambda_i)\,\frac{1}{|O_i|}\sum_{j \in O_i} x_j
+n_i = \lambda_i \, \bar{x}_{\mathrm{feed}} + (1-\lambda_i)\, \bar{x}_{\mathrm{offline}}
 ```
 
-In-group likes (a viewer likes a same-camp post bolder than their own view):
-
 ```math
-\ell_i \leftarrow 0.8\,\ell_i + 0.2\,\frac{\#\{\text{viewers } v:\ \operatorname{sign}x_v=\operatorname{sign}x_i,\ |x_i|>|x_v|\}}{\#\text{views of } i}
+x_i \leftarrow x_i + \mu\,(\bar{x}_{\mathrm{near}} - x_i) + \alpha\,(x^0_i - x_i)
 ```
 
-Opinion update:
+- $r_i$: how much agent $i$ posts; the feed samples posts in proportion to $r$
+- $x_i$: opinion ($x^0_i$: offline opinion); $\mathrm{act}_i$: heavy-tailed activity
+- $k$: strong opinions post more
+- $a_i$: spiral of silence; agents far from the perceived norm $n_i$ go quiet
+- $\lambda_i$: share of attention spent online
+- $\bar{x}_{\mathrm{near}}$: mean of seen posts close to one's own view; $\mu$: pull toward them
+- $\alpha$: pull back toward the offline opinion
 
-```math
-x_i \leftarrow x_i
-+ \mu\Big(\overline{x}_{\{j\in F_i:\,|x_j-x_i|<\varepsilon\}} - x_i\Big)
-+ \rho_{g(i)}\,\operatorname{sign}(x_i)\,\frac{1}{S}\sum_{\substack{j\in F_i\\ \operatorname{sign}x_j\neq\operatorname{sign}x_i}} |x_j|
-+ \alpha\,(x^0_i - x_i)
-```
-
-| Symbol | Meaning |
-|---|---|
-| $x_i$ | opinion; its sign is the camp $g(i) \in \{L, R\}$ |
-| $x^0_i$ | offline opinion (initial value, real-world anchor) |
-| $\mathrm{act}_i$ | baseline activity, lognormal (heavy-tailed volume) |
-| $k$ | intensity selection: stronger opinions post more |
-| $a_i$ | agreeability: $a>0$ quiet when far from the norm (spiral of silence), $a<0$ louder when far |
-| $n_i$ | perceived norm |
-| $s_i$ | status drive: sensitivity to likes |
-| $\ell_i$ | recent in-group like rate |
-| $r_{\min}$ | posting floor |
-| $S$ | posts seen per step |
-| $h$ | homophily: share of the feed from opinion neighbours |
-| $\lambda_i$ | online share of attention |
-| $O_i$ | random offline contacts (5) |
-| $\mu$ | attraction strength toward nearby views |
-| $\varepsilon$ | confidence bound: how close a view must be to attract |
-| $\rho_L, \rho_R$ | backlash strength against out-group content, per camp |
-| $\alpha$ | pull back toward the offline opinion |
-
-Nested models: M0 ($a=s=\rho=0$) → M1 ($+\bar a>0$) → M2 ($+\operatorname{sd}(a)>0$) → M3 ($+s>0$) → M4 ($+\rho>0$).
+M0: $a = 0$. M1: $a > 0$.
 
 ## Figures
 
@@ -63,9 +34,9 @@ Nested models: M0 ($a=s=\rho=0$) → M1 ($+\bar a>0$) → M2 ($+\operatorname{sd
 
 ![Figure 2](figures/2_perception_gap.png)
 
-**Figure 3. What each mechanism adds**
+**Figure 3. M0 vs M1**
 
-![Figure 3](figures/3_nested_models.png)
+![Figure 3](figures/3_m0_vs_m1.png)
 
 **Figure 4. Committed minority**
 
@@ -75,25 +46,17 @@ Nested models: M0 ($a=s=\rho=0$) → M1 ($+\bar a>0$) → M2 ($+\operatorname{sd
 
 ![Figure 5](figures/5_who_wins.png)
 
-**Figure 6. Cross-group bias**
+**Figure 6. Charged events**
 
-![Figure 6](figures/6_cross_bias.png)
+![Figure 6](figures/6_events.png)
 
-**Figure 7. Hostility ratchet**
+**Figure 7. Charged events: opinion density**
 
-![Figure 7](figures/7_hostility_ratchet.png)
+![Figure 7](figures/7_event_density.png)
 
-**Figure 8. Charged events: feed response**
+**Figure 8. Why issues become two-party**
 
-![Figure 8](figures/8_events.png)
-
-**Figure 9. Charged events: opinion density**
-
-![Figure 9](figures/9_event_density.png)
-
-**Figure 10. Why issues become two-party**
-
-![Figure 10](figures/10_two_party.png)
+![Figure 8](figures/8_two_party.png)
 
 ## References
 

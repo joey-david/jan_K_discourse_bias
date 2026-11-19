@@ -37,17 +37,17 @@ def pmap(jobs):
 def summary(o):
     x, r = o["x"], o["r"]; fw = r / r.sum(); fm = (fw * x).sum()
     return dict(pop_sd=x.std(), feed_sd=np.sqrt((fw * (x - fm) ** 2).sum()),
-                n_fac=n_factions(x), dis_feed=fw[o["a"] < 0].sum(), dis_pop=np.mean(o["a"] < 0),
+                n_fac=n_factions(x),
                 top1=np.sort(fw)[-len(x) // 100:].sum(),
                 gap=np.mean(o["perceived"] / o["true_out"]))
 
 
-# 1-3, 9: nested models (who is seen, perception gap, ablation, hostility ratchet)
+# nested models (who is seen, perception gap, ablation, hostility ratchet)
 def exp_nested():
     names = list(MODELS)
     outs = pmap([(params(**MODELS[m]), sd, True) for m in names for sd in range(3)])
     print("\n[nested] mean over 3 seeds")
-    keys = ["pop_sd", "feed_sd", "n_fac", "dis_feed", "dis_pop", "top1", "gap"]
+    keys = ["pop_sd", "feed_sd", "n_fac", "top1", "gap"]
     print(f"   {'model':24s} " + " ".join(f"{k:>8s}" for k in keys))
     for i, m in enumerate(names):
         S = [summary(o) for o in outs[3 * i:3 * i + 3]]
@@ -58,7 +58,7 @@ def exp_nested():
     RES["nest_names"], RES["nest_keys"] = np.array(names), np.array(keys)
     # offset + trait exaggeration: M0 vs full, one seed
     for tag, oo in (("m0", outs[:3]), ("full", outs[-3:])):     # pool 3 seeds; r = posting volume
-        for v in ("x", "a"):
+        for v in ("x",):
             RES[f"off_{tag}_{v}"] = np.concatenate([o[v] for o in oo])
         RES[f"off_{tag}_w"] = np.concatenate([o["r"] / o["r"].sum() for o in oo])
     # perception gap vs online share lambda (full model, 3 seeds pooled)
@@ -99,43 +99,27 @@ def exp_who_wins():
         print(f"   {d:+5.1f} | " + " ".join(f"{pop[i, j]:.2f}|{feed[i, j]:.2f}" for j in range(5)))
 
 
-# 6: cross-group bias (Bail asymmetry)
-def exp_cross():
-    das = np.linspace(0, -1.6, 9)                 # R increasingly disagreeable
-    cfg = [(0.0, 0.0), (0.02, 0.0), (0.02, 0.02)]  # (rho_L, rho_R)
-    outs = pmap([(params(**{**FULL, "rho_L": rl, "rho_R": rr}, **SMALL, da_R=d), sd, False)
-                 for rl, rr in cfg for d in das for sd in range(2)])
-    RES["cross_da"] = das
-    print("\n[cross] mean opinion of L camp as R becomes disagreeable")
-    for c, (rl, rr) in enumerate(cfg):
-        mL = [np.mean([o["x"][o["x0"] < 0].mean() for o in outs[(c * 9 + i) * 2:(c * 9 + i) * 2 + 2]])
-              for i in range(9)]
-        RES[f"cross_mL_{c}"] = np.array(mL)
-        print(f"   rho_L={rl}, rho_R={rr}: " + ", ".join(f"{v:+.2f}" for v in mL[::2]))
-    RES["cross_cfg"] = np.array(cfg)
-
-
 # 7-8: charged events, fixed selection vs full model (hysteresis)
 def exp_events():
     T, t0 = 300, 150
     scen = {"none": None, "sym": (t0, 1.5, 25, "both"), "right": (t0, 1.5, 25, "R")}
     seeds = range(3)
     jobs = [(params(**MODELS[m], n=3000, steps=T, shock=sh), sd, True)
-            for m in ("M0 fixed selection", "M4 +backlash (full)") for sh in scen.values() for sd in seeds]
+            for m in ("M0 fixed selection", "M1 +spiral of silence") for sh in scen.values() for sd in seeds]
     outs = pmap(jobs); RES["ev_t0"] = t0
     outs = [dict(ts=np.mean([o["ts"] for o in outs[i:i + 3]], 0), hs=outs[i]["hs"])
             for i in range(0, len(outs), 3)]          # seed-averaged time series
-    print(f"\n[events] t0={t0}: pop sd before -> +20 -> end | disagreeable feed share")
+    print(f"\n[events] t0={t0}: pop sd before -> +20 -> end")
     for i, (m, name) in enumerate([(m, s) for m in ("m0", "full") for s in scen]):
         ts = outs[i]["ts"]; RES[f"ev_{m}_{name}_ts"] = ts; RES[f"ev_{m}_{name}_hs"] = outs[i]["hs"]
         print(f"   {m:4s} {name:5s}: " + " -> ".join(f"{ts[t, 0]:.2f}" for t in (t0 - 1, t0 + 20, T - 1))
-              + "  |  " + " -> ".join(f"{ts[t, 4]:.2f}" for t in (t0 - 1, t0 + 20, T - 1)))
+              )
 
 
 # 10: two-party
 def exp_two_party():
     hs = np.linspace(0, 0.9, 7)
-    cfgs = {"m0": MODELS["M0 fixed selection"], "m2": MODELS["M2 +agreeability"], "full": FULL}
+    cfgs = {"m0": MODELS["M0 fixed selection"], "full": FULL}
     outs = pmap([(params(**c, **SMALL, h=h), sd, False) for c in cfgs.values() for h in hs for sd in range(2)])
     RES["tp_h"] = hs
     print("\n[two-party] effective no. of factions vs homophily h (0 = one shared feed)")
@@ -148,7 +132,7 @@ def exp_two_party():
 
 
 ALL = dict(nested=exp_nested, minority=exp_minority, who_wins=exp_who_wins,
-           cross=exp_cross, events=exp_events, two_party=exp_two_party)
+           events=exp_events, two_party=exp_two_party)
 
 if __name__ == "__main__":
     chosen = sys.argv[1:] or list(ALL)
