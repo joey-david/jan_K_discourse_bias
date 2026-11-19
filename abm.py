@@ -19,12 +19,7 @@ BASE = dict(n=4000, steps=200, sample=20, k=1.0, a_mu=0.0, a_sd=0.0, mu=0.1, eps
             floor=0.02, f_right=0.5, da_R=0.0, dk_R=0.0, committed=0.0, xmax=4.0,
             shock=None)   # shock = (t0, amplitude, tau, "both"|"R"): charged event boosting k
 
-# nested models: each adds one mechanism
-MODELS = {
-    "M0 fixed selection":   dict(),
-    "M1 +spiral of silence": dict(a_mu=0.8),
-}
-FULL = MODELS["M1 +spiral of silence"]
+MODEL = dict(a_mu=0.8)   # spiral of silence strength
 
 
 def params(**kw):

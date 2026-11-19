@@ -16,7 +16,7 @@ from pathlib import Path
 
 import numpy as np
 
-from abm import FULL, MODELS, n_factions, params, simulate
+from abm import MODEL as FULL, n_factions, params, simulate
 
 OUT = Path(__file__).parent / "results"; OUT.mkdir(exist_ok=True)
 FILE = OUT / "abm.npz"
@@ -42,32 +42,19 @@ def summary(o):
                 gap=np.mean(o["perceived"] / o["true_out"]))
 
 
-# nested models (who is seen, perception gap, ablation, hostility ratchet)
-def exp_nested():
-    names = list(MODELS)
-    outs = pmap([(params(**MODELS[m]), sd, True) for m in names for sd in range(3)])
-    print("\n[nested] mean over 3 seeds")
-    keys = ["pop_sd", "feed_sd", "n_fac", "top1", "gap"]
-    print(f"   {'model':24s} " + " ".join(f"{k:>8s}" for k in keys))
-    for i, m in enumerate(names):
-        S = [summary(o) for o in outs[3 * i:3 * i + 3]]
-        vals = np.array([[s_[k] for k in keys] for s_ in S])
-        RES[f"nest_{i}_mean"], RES[f"nest_{i}_sd"] = vals.mean(0), vals.std(0)
-        RES[f"nest_{i}_ts"] = outs[3 * i]["ts"]
-        print(f"   {m:24s} " + " ".join(f"{v:8.2f}" for v in vals.mean(0)))
-    RES["nest_names"], RES["nest_keys"] = np.array(names), np.array(keys)
-    # offset + trait exaggeration: M0 vs full, one seed
-    for tag, oo in (("m0", outs[:3]), ("full", outs[-3:])):     # pool 3 seeds; r = posting volume
-        for v in ("x",):
-            RES[f"off_{tag}_{v}"] = np.concatenate([o[v] for o in oo])
-        RES[f"off_{tag}_w"] = np.concatenate([o["r"] / o["r"].sum() for o in oo])
-    # perception gap vs online share lambda (full model, 3 seeds pooled)
-    lam = np.concatenate([o["lam"] for o in outs[-3:]])
-    ratio = np.concatenate([o["perceived"] / o["true_out"] for o in outs[-3:]])
+# offset + perception gap
+def exp_base():
+    outs = pmap([(params(**FULL), sd, False) for sd in range(3)])
+    RES["off_x"] = np.concatenate([o["x"] for o in outs])
+    RES["off_w"] = np.concatenate([o["r"] / o["r"].sum() for o in outs])
+    lam = np.concatenate([o["lam"] for o in outs])
+    ratio = np.concatenate([o["perceived"] / o["true_out"] for o in outs])
     edges = np.quantile(lam, np.linspace(0, 1, 11)); idx = np.clip(np.digitize(lam, edges) - 1, 0, 9)
     RES["gap_lam"] = np.array([lam[idx == b].mean() for b in range(10)])
     RES["gap_ratio"] = np.array([ratio[idx == b].mean() for b in range(10)])
     RES["gap_ratio_se"] = np.array([ratio[idx == b].std() / np.sqrt((idx == b).sum()) for b in range(10)])
+    S = [summary(o) for o in outs]
+    print("\n[base] " + ", ".join(f"{k}={np.mean([s_[k] for s_ in S]):.2f}" for k in S[0]))
     print(f"   perception gap, lowest vs highest online-share decile: "
           f"{RES['gap_ratio'][0]:.2f}x vs {RES['gap_ratio'][-1]:.2f}x")
 
@@ -104,34 +91,30 @@ def exp_events():
     T, t0 = 300, 150
     scen = {"none": None, "sym": (t0, 1.5, 25, "both"), "right": (t0, 1.5, 25, "R")}
     seeds = range(3)
-    jobs = [(params(**MODELS[m], n=3000, steps=T, shock=sh), sd, True)
-            for m in ("M0 fixed selection", "M1 +spiral of silence") for sh in scen.values() for sd in seeds]
+    jobs = [(params(**FULL, n=3000, steps=T, shock=sh), sd, True) for sh in scen.values() for sd in seeds]
     outs = pmap(jobs); RES["ev_t0"] = t0
     outs = [dict(ts=np.mean([o["ts"] for o in outs[i:i + 3]], 0), hs=outs[i]["hs"])
             for i in range(0, len(outs), 3)]          # seed-averaged time series
     print(f"\n[events] t0={t0}: pop sd before -> +20 -> end")
-    for i, (m, name) in enumerate([(m, s) for m in ("m0", "full") for s in scen]):
-        ts = outs[i]["ts"]; RES[f"ev_{m}_{name}_ts"] = ts; RES[f"ev_{m}_{name}_hs"] = outs[i]["hs"]
-        print(f"   {m:4s} {name:5s}: " + " -> ".join(f"{ts[t, 0]:.2f}" for t in (t0 - 1, t0 + 20, T - 1))
+    for i, name in enumerate(scen):
+        ts = outs[i]["ts"]; RES[f"ev_{name}_ts"] = ts; RES[f"ev_{name}_hs"] = outs[i]["hs"]
+        print(f"   {name:5s}: " + " -> ".join(f"{ts[t, 0]:.2f}" for t in (t0 - 1, t0 + 20, T - 1))
               )
 
 
 # 10: two-party
 def exp_two_party():
     hs = np.linspace(0, 0.9, 7)
-    cfgs = {"m0": MODELS["M0 fixed selection"], "full": FULL}
-    outs = pmap([(params(**c, **SMALL, h=h), sd, False) for c in cfgs.values() for h in hs for sd in range(2)])
+    outs = pmap([(params(**FULL, **SMALL, h=h), sd, False) for h in hs for sd in range(2)])
     RES["tp_h"] = hs
-    print("\n[two-party] effective no. of factions vs homophily h (0 = one shared feed)")
-    for c, tag in enumerate(cfgs):
-        nf = [np.mean([n_factions(o["x"]) for o in outs[(c * 7 + i) * 2:(c * 7 + i) * 2 + 2]]) for i in range(7)]
-        RES[f"tp_nf_{tag}"] = np.array(nf)
-        print(f"   {tag:4s}: " + " ".join(f"{v:.2f}" for v in nf))
+    nf = [np.mean([n_factions(o["x"]) for o in outs[2 * i:2 * i + 2]]) for i in range(7)]
+    RES["tp_nf"] = np.array(nf)
+    print("\n[two-party] effective no. of factions vs homophily h: " + " ".join(f"{v:.2f}" for v in nf))
     for tag, o in zip(("shared", "local"), pmap([(params(**FULL, h=h), 0, True) for h in (0.0, 0.9)])):
         RES[f"tp_hs_{tag}"] = o["hs"]
 
 
-ALL = dict(nested=exp_nested, minority=exp_minority, who_wins=exp_who_wins,
+ALL = dict(base=exp_base, minority=exp_minority, who_wins=exp_who_wins,
            events=exp_events, two_party=exp_two_party)
 
 if __name__ == "__main__":

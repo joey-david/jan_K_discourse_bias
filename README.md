@@ -22,8 +22,6 @@ x_i \leftarrow x_i + \mu\,(\bar{x}_{\mathrm{near}} - x_i) + \alpha\,(x^0_i - x_i
 - $\bar{x}_{\mathrm{near}}$: mean of seen posts close to one's own view; $\mu$: pull toward them
 - $\alpha$: pull back toward the offline opinion
 
-M0: $a = 0$. M1: $a > 0$.
-
 ## Figures
 
 **Figure 1. Who is heard: feed vs population**
@@ -34,29 +32,21 @@ M0: $a = 0$. M1: $a > 0$.
 
 ![Figure 2](figures/2_perception_gap.png)
 
-**Figure 3. M0 vs M1**
+**Figure 3. Committed minority**
 
-![Figure 3](figures/3_m0_vs_m1.png)
+![Figure 3](figures/3_minority.png)
 
-**Figure 4. Committed minority**
+**Figure 4. Who wins the feed**
 
-![Figure 4](figures/4_minority.png)
+![Figure 4](figures/4_who_wins.png)
 
-**Figure 5. Who wins the feed**
+**Figure 5. Charged events**
 
-![Figure 5](figures/5_who_wins.png)
+![Figure 5](figures/5_events.png)
 
-**Figure 6. Charged events**
+**Figure 6. Why issues become two-party**
 
-![Figure 6](figures/6_events.png)
-
-**Figure 7. Charged events: opinion density**
-
-![Figure 7](figures/7_event_density.png)
-
-**Figure 8. Why issues become two-party**
-
-![Figure 8](figures/8_two_party.png)
+![Figure 6](figures/6_two_party.png)
 
 ## References
 
