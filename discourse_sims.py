@@ -72,6 +72,32 @@ def exp_who_wins():
         print(f"   {d:+5.1f} | " + " ".join(f"{pop[i, j]:.2f}|{feed[i, j]:.2f}" for j in range(5)))
 
 
+# decoupling: change the feed a lot, measure how much people move
+def exp_decouple():
+    ks = np.linspace(0, 3, 7)
+    outs = pmap([(params(**{**FULL, "k": k}, **SMALL), sd, False) for k in ks for sd in range(2)])
+    fsd, psd = [], []
+    for i in range(len(ks)):
+        S = [summary(o) for o in outs[2 * i:2 * i + 2]]
+        fsd.append(np.mean([s_["feed_sd"] for s_ in S])); psd.append(np.mean([s_["pop_sd"] for s_ in S]))
+    RES["dec_k"], RES["dec_feed_sd"], RES["dec_pop_sd"] = ks, np.array(fsd), np.array(psd)
+    print("\n[decouple A] k: feed sd | pop sd")
+    for k, a, b in zip(ks, fsd, psd): print(f"   k={k:.1f}: {a:.2f} | {b:.2f}")
+    das = np.linspace(-1.2, 1.2, 9); alphas = (0.005, 0.02, 0.08)
+    outs = pmap([(params(**FULL, **SMALL, da_R=d, alpha=al), sd, False)
+                 for al in alphas for d in das for sd in range(2)])
+    RES["dec_da"], RES["dec_alpha"] = das, np.array(alphas)
+    print("\n[decouple B] R share of feed | people, by agreeability gap (f_R = 0.5)")
+    for c, al in enumerate(alphas):
+        fe, po = [], []
+        for i in range(len(das)):
+            oo = outs[(c * 9 + i) * 2:(c * 9 + i) * 2 + 2]
+            fe.append(np.mean([(o["r"] * (o["x"] > 0)).sum() / o["r"].sum() for o in oo]))
+            po.append(np.mean([np.mean(o["x"] > 0) for o in oo]))
+        RES[f"dec_feed_{c}"], RES[f"dec_pop_{c}"] = np.array(fe), np.array(po)
+        print(f"   alpha={al}: feed {fe[0]:.2f}->{fe[-1]:.2f}  people {po[0]:.2f}->{po[-1]:.2f}")
+
+
 # 10: two-party
 def exp_two_party():
     hs = np.linspace(0, 0.9, 7)
@@ -84,7 +110,7 @@ def exp_two_party():
         RES[f"tp_hs_{tag}"] = o["hs"]
 
 
-ALL = dict(base=exp_base, who_wins=exp_who_wins, two_party=exp_two_party)
+ALL = dict(base=exp_base, who_wins=exp_who_wins, two_party=exp_two_party, decouple=exp_decouple)
 
 if __name__ == "__main__":
     chosen = sys.argv[1:] or list(ALL)

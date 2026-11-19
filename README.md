@@ -40,6 +40,10 @@ x_i \leftarrow x_i + \mu\,(\bar{x}_{\mathrm{near}} - x_i) + \alpha\,(x^0_i - x_i
 
 ![Figure 4](figures/4_two_party.png)
 
+**Figure 5. The feed moves, people barely do**
+
+![Figure 5](figures/5_feed_vs_people.png)
+
 ## References
 
 - Bor, A., & Petersen, M. B. (2022). The psychology of online political hostility: A comprehensive, cross-national test of the mismatch hypothesis. *American Political Science Review*, 116(1), 1–18. [link](https://research.ceu.edu/en/publications/the-psychology-of-online-political-hostility-a-comprehensive-cros/)

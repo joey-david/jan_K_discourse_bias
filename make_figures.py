@@ -133,9 +133,26 @@ def fig_two_party(R):
     fig.tight_layout(); finalize_figure(fig, "4_two_party")
 
 
+def fig_decouple(R):
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4.5))
+    ax = axes[0]; k = R["dec_k"]
+    ax.plot(k, R["dec_feed_sd"], color=C["red_strong"], lw=2.5, marker="o", mfc="white", mew=2, label="Feed")
+    ax.plot(k, R["dec_pop_sd"], color=C["blue_main"], lw=2.5, marker="s", mfc="white", mew=2, label="People")
+    ax.set(xlabel="Selection strength $k$", ylabel="Opinion spread (sd)", ylim=(0, None)); ax.legend(loc="upper left")
+    ax = axes[1]; x = -R["dec_da"]
+    ax.axhline(50, color=C["neutral"], lw=2, ls="--")
+    ax.plot(x, R["dec_feed_1"] * 100, color=C["red_strong"], lw=2.5, marker="o", mfc="white", mew=2, label="Feed")
+    for c, (al, col) in enumerate(zip(R["dec_alpha"], [C["blue_secondary"], C["blue_main"], C["teal"]])):
+        ax.plot(x, R[f"dec_pop_{c}"] * 100, color=col, lw=2.5, marker="s", mfc="white", mew=2,
+                label=f"People, offline pull $\\alpha$={al:g}")
+    ax.set(xlabel="How much less R shrinks from disagreement ($a_L - a_R$)", ylabel="R share (%)", ylim=(0, 100))
+    ax.legend(loc="upper left", fontsize=11)
+    fig.tight_layout(); finalize_figure(fig, "5_feed_vs_people")
+
+
 if __name__ == "__main__":
     apply_publication_style()
     R = dict(np.load(DATA))
-    for f in (fig_offset, fig_gap, fig_who_wins, fig_two_party):
+    for f in (fig_offset, fig_gap, fig_who_wins, fig_two_party, fig_decouple):
         f(R)
     print(f"Figures in {FIGS}")
