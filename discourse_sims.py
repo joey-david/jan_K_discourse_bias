@@ -60,21 +60,6 @@ def exp_base():
           f"{RES['gap_ratio'][0]:.2f}x vs {RES['gap_ratio'][-1]:.2f}x")
 
 
-# 4: committed minority
-def exp_minority():
-    fs = np.linspace(0, 0.10, 11)
-    outs = pmap([(params(**FULL, **SMALL, committed=f), sd, False) for f in fs for sd in range(2)])
-    popR, feedR = [], []
-    for i in range(len(fs)):
-        o2 = outs[2 * i:2 * i + 2]
-        popR.append(np.mean([np.mean(o["x"][~o["com"]] > 0) for o in o2]))
-        feedR.append(np.mean([(o["r"] * (o["x"] > 0)).sum() / o["r"].sum() for o in o2]))
-    RES["min_f"], RES["min_popR"], RES["min_feedR"] = fs, np.array(popR), np.array(feedR)
-    print("\n[minority] committed R zealots (taken from L camp) -> share of non-zealots on R | R feed share")
-    for f, a, b in list(zip(fs, popR, feedR))[::2]:
-        print(f"   {f:4.0%}: {a:.2f} | {b:.2f}")
-
-
 # 5: who wins: camp size x agreeability gap
 def exp_who_wins():
     fs = np.linspace(0.3, 0.7, 5); das = np.linspace(-1.2, 1.2, 5)
@@ -85,22 +70,6 @@ def exp_who_wins():
     print("\n[who wins] rows = agreeability gap a_R - a_L, cols = initial R share; pop|feed share R")
     for i, d in enumerate(das):
         print(f"   {d:+5.1f} | " + " ".join(f"{pop[i, j]:.2f}|{feed[i, j]:.2f}" for j in range(5)))
-
-
-# 7-8: charged events, fixed selection vs full model (hysteresis)
-def exp_events():
-    T, t0 = 300, 150
-    scen = {"none": None, "sym": (t0, 1.5, 25, "both"), "right": (t0, 1.5, 25, "R")}
-    seeds = range(3)
-    jobs = [(params(**FULL, n=3000, steps=T, shock=sh), sd, True) for sh in scen.values() for sd in seeds]
-    outs = pmap(jobs); RES["ev_t0"] = t0
-    outs = [dict(ts=np.mean([o["ts"] for o in outs[i:i + 3]], 0), hs=outs[i]["hs"])
-            for i in range(0, len(outs), 3)]          # seed-averaged time series
-    print(f"\n[events] t0={t0}: pop sd before -> +20 -> end")
-    for i, name in enumerate(scen):
-        ts = outs[i]["ts"]; RES[f"ev_{name}_ts"] = ts; RES[f"ev_{name}_hs"] = outs[i]["hs"]
-        print(f"   {name:5s}: " + " -> ".join(f"{ts[t, 0]:.2f}" for t in (t0 - 1, t0 + 20, T - 1))
-              )
 
 
 # 10: two-party
@@ -115,8 +84,7 @@ def exp_two_party():
         RES[f"tp_hs_{tag}"] = o["hs"]
 
 
-ALL = dict(base=exp_base, minority=exp_minority, who_wins=exp_who_wins,
-           events=exp_events, two_party=exp_two_party)
+ALL = dict(base=exp_base, who_wins=exp_who_wins, two_party=exp_two_party)
 
 if __name__ == "__main__":
     chosen = sys.argv[1:] or list(ALL)

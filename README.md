@@ -32,21 +32,13 @@ x_i \leftarrow x_i + \mu\,(\bar{x}_{\mathrm{near}} - x_i) + \alpha\,(x^0_i - x_i
 
 ![Figure 2](figures/2_perception_gap.png)
 
-**Figure 3. Committed minority**
+**Figure 3. Who wins the feed**
 
-![Figure 3](figures/3_minority.png)
+![Figure 3](figures/3_who_wins.png)
 
-**Figure 4. Who wins the feed**
+**Figure 4. Why issues become two-party**
 
-![Figure 4](figures/4_who_wins.png)
-
-**Figure 5. Charged events**
-
-![Figure 5](figures/5_events.png)
-
-**Figure 6. Why issues become two-party**
-
-![Figure 6](figures/6_two_party.png)
+![Figure 4](figures/4_two_party.png)
 
 ## References
 

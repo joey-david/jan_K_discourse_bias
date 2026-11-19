@@ -104,16 +104,6 @@ def fig_gap(R):
     fig.tight_layout(); finalize_figure(fig, "2_perception_gap")
 
 
-def fig_minority(R):
-    fig, ax = plt.subplots(figsize=(7, 4.5)); f = R["min_f"] * 100
-    ax.plot(f, R["min_feedR"] * 100, color=C["red_strong"], lw=2.5, marker="o", mfc="white", mew=2, label="R share of feed")
-    ax.plot(f, R["min_popR"] * 100, color=C["blue_main"], lw=2.5, marker="s", mfc="white", mew=2, label="R share of people")
-    ax.axhline(50, color=C["neutral"], lw=2, ls="--")
-    ax.set(xlabel="Committed R minority (% of population)", ylabel="Share (%)", ylim=(40, 100))
-    ax.legend(loc="center right")
-    finalize_figure(fig, "3_minority")
-
-
 def fig_who_wins(R):
     fig, axes = plt.subplots(1, 2, figsize=(12, 5), sharey=True)
     f, da = R["win_f"], R["win_da"]; ext = [f[0] - 0.05, f[-1] + 0.05, da[0] - 0.3, da[-1] + 0.3]
@@ -126,26 +116,7 @@ def fig_who_wins(R):
         ax.set(title=title, xlabel="Initial share of R"); boxed(ax)
     axes[0].set_ylabel("$a_R - a_L$\n(< 0: R less deterred by disagreement)")
     cb = fig.colorbar(im, ax=axes, fraction=0.03, pad=0.02); cb.set_label("Share of R")
-    finalize_figure(fig, "4_who_wins")
-
-
-def fig_events(R):
-    t0 = int(R["ev_t0"]); sc = [("none", "No event", C["neutral"]), ("sym", "Symmetric event", C["violet"]),
-                               ("right", "One-sided event (R)", C["red_strong"])]
-    fig, axes = plt.subplots(1, 3, figsize=(19, 4.5), gridspec_kw=dict(width_ratios=[1, 1, 1.1])); lo = -60
-    for ax, (j, yl) in zip(axes[:2], [(1, "Feed spread (sd)"), (3, "R share of feed")]):
-        for key, lab, c in sc:
-            ts = R[f"ev_{key}_ts"]; t = np.arange(len(ts)) - t0; keep = t >= lo
-            ax.plot(t[keep], movavg(ts[:, j], 5)[keep], color=c, lw=2.5, label=lab)
-        ax.axvline(0, color="black", lw=1, ls="--"); ax.set(ylabel=yl, xlabel="Time since event")
-    axes[0].legend(loc="upper right", fontsize=12)
-    ax = axes[2]; h = R["ev_sym_hs"]
-    im = ax.imshow(h.T, origin="lower", aspect="auto", cmap="Blues", vmin=0, vmax=0.06,
-                   extent=[-t0, len(h) - t0, -4, 4], interpolation="nearest")
-    ax.axvline(0, color=C["red_strong"], lw=2, ls="--"); boxed(ax)
-    ax.set(title="Opinion density, symmetric event", xlabel="Time since event", ylabel="Opinion $x$")
-    fig.colorbar(im, ax=ax, fraction=0.05, pad=0.02).set_label("Population share")
-    fig.tight_layout(); finalize_figure(fig, "5_events")
+    finalize_figure(fig, "3_who_wins")
 
 
 def fig_two_party(R):
@@ -159,12 +130,12 @@ def fig_two_party(R):
     ax = axes[2]; ax.axhline(2, color=C["neutral"], lw=2, ls="--")
     ax.plot(R["tp_h"], R["tp_nf"], color=C["blue_main"], lw=2.5, marker="o", mfc="white", mew=2)
     ax.set(xlabel="Homophily $h$ (0 = one shared feed)", ylabel="Effective no. of factions", ylim=(0.8, 2.6))
-    fig.tight_layout(); finalize_figure(fig, "6_two_party")
+    fig.tight_layout(); finalize_figure(fig, "4_two_party")
 
 
 if __name__ == "__main__":
     apply_publication_style()
     R = dict(np.load(DATA))
-    for f in (fig_offset, fig_gap, fig_minority, fig_who_wins, fig_events, fig_two_party):
+    for f in (fig_offset, fig_gap, fig_who_wins, fig_two_party):
         f(R)
     print(f"Figures in {FIGS}")
