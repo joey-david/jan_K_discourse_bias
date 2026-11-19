@@ -54,3 +54,7 @@ x_i \leftarrow x_i + \mu\,(\bar{x}_{\mathrm{near}} - x_i) + \alpha\,(x^0_i - x_i
 - Bail, C. A., et al. (2018). Exposure to opposing views on social media can increase political polarization. *PNAS*, 115(37), 9216–9221.
 - Noelle-Neumann, E. (1974). The spiral of silence: A theory of public opinion. *Journal of Communication*, 24(2), 43–51.
 - Yudkowsky, E. (2007). Evaporative cooling of group beliefs. *LessWrong*.
+- Guess, A. M., et al. (2023). How do social media feed algorithms affect attitudes and behavior in an election campaign? *Science*, 381(6656), 398–404. [doi](https://doi.org/10.1126/science.abp9364)
+- Guess, A. M., et al. (2023). Reshares on social media amplify political news but do not detectably affect beliefs or opinions. *Science*, 381(6656), 404–408. [doi](https://doi.org/10.1126/science.add8424)
+- Nyhan, B., et al. (2023). Like-minded sources on Facebook are prevalent but not polarizing. *Nature*, 620, 137–144. [doi](https://doi.org/10.1038/s41586-023-06297-w)
+- Grinberg, N., Joseph, K., Friedland, L., Swire-Thompson, B., & Lazer, D. (2019). Fake news on Twitter during the 2016 U.S. presidential election. *Science*, 363(6425), 374–378. [doi](https://doi.org/10.1126/science.aau2706)
